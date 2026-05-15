@@ -63,3 +63,30 @@
 
 **Out of scope (현 시점):**
 - 검증 결과 따른 후속 액션 (per-docker refactor 우선순위 조정 / 다른 root-cause 진단).
+
+> **D4 obsolete (2026-05-15):** D5 결정 (분기 A 채택)으로 vanilla `:latest` image 사용 자체가 폐기 → stale image 가설이 moot. Diagnosis 액션 dropped. 본문은 reasoning trail로 보존.
+
+---
+
+## D5: 분기 A 채택 (host pwno-mcp + per-docker worker), 분기 B 폐기 (2026-05-15)
+
+**결정:** `feat/per-docker-refactor` 의 architectural 분기는 **A** (pwno-mcp가 호스트 Python process로 동작 + docker CLI/SDK 또는 subprocess로 worker container 매핑). **B** (docker-in-docker, `docker.sock` 마운트 sibling spawn) **폐기**.
+
+**근거 (deep-interview 결과 — `.omc/specs/deep-interview-c1-host-mcp-docker-tool.md` § Assumptions Exposed & Resolved 참조):**
+- 사용자 명시 의도 (Round 0 follow-up): "내가 원하는 건 로컬 상에서 돌아가고 도커는 디버깅 하기 위한 걸로 ... 로컬 mcp가 각 docker들을 컨트롤".
+- 분기 A는 docker-in-docker 복잡도 / 권한 처리 복잡도 0. host pwno-mcp 직접 실행 → dev iteration 빠름 (`uv run python -m pwnomcp`).
+- pwno-mcp host 의존성은 사용자 환경에 이미 갖춰짐 (uv, gdb, pwndbg, qemu-user 등). 사용자 setup 비용 0.
+- D2 추천 분기 B는 `pwno-mcp:dev` image 안에서 sibling spawn 패턴이었으나, 사용자가 "로컬에서 돈다"고 명시 → 분기 A로 pivot.
+
+**D4 obsolete 효과:**
+- D4 (stale image 가설 검증)는 *vanilla `:latest` image* 사용을 전제. 이번 결정으로 vanilla image 사용 자체가 폐기 → 가설 moot. 검증 액션 dropped.
+
+**후속:**
+- C1 ship gate (minimal demo, spec 참조) 통과 → 분기 A 검증 완료.
+- 분기 A 변경 폭은 spec § Technical Context 의 추상화 매핑 참조 (`DebugSession → ContainerSession`, `DebugSessionRegistry → DockerWorkerRegistry`, `PwndbgTools → RemoteGdbToolsProxy`, `run_session_action → docker_exec_action`).
+- Sub-task pipeline (7개) → `.omc/state/current-task.md`.
+
+**Trade-off (수용):**
+- 사용자가 다른 머신에서 fork 사용 시 호스트 의존성 install 필요 (vanilla docker pull로 해결되지 않음). 사용자 환경 한정 fork이므로 acceptable.
+- pwno-mcp가 host docker daemon 사용 → 권한 (docker group 또는 root) 필요. Linux 한정 (macOS/Windows out of scope).
+- ARM (C2) / Kernel CTF (C3) component는 **deferred** — 별개 후속 spec/branch.
