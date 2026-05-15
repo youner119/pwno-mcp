@@ -220,3 +220,10 @@ __marimo__/
 
 # This isn't actually reference here, just for development
 .nonce
+
+# OmP fork context — track curated artifacts, exclude ephemeral OMC tooling state
+# (HUD cache, session dumps, ralph state, etc. that may leak in from OMC usage)
+.omc/state/*
+!.omc/state/current-task.md
+!.omc/state/prev-task.md
+
