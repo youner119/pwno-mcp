@@ -34,6 +34,9 @@ services:
     volumes:
       - ./workspace:/workspace:rw
       - ./binaries:/binaries:ro
+      # Persistent cache for debuginfod fetches — avoids re-downloading libc
+      # debug info on every container restart. Survives `docker compose down`.
+      - omp-debuginfod-cache:/home/pwno/.cache/debuginfod_client:rw
       - type: tmpfs
         target: /tmp
         tmpfs:
@@ -61,4 +64,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s 
+      start_period: 40s
+
+volumes:
+  omp-debuginfod-cache:

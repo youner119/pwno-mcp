@@ -54,6 +54,13 @@ ENV PYTHONPATH=/app
 ENV UV_PROJECT_ENVIRONMENT=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
+# debuginfod URL chain — pwndbg has `debuginfod enabled = on` by default but
+# leaves URLs unset, which makes attach try (and fail with "Invalid argument")
+# for every loaded library's build-id. Wiring the URL chain lets GDB pull the
+# matching libc/lib .debug from upstream debuginfod servers. Cache persists
+# via the docker-compose named volume omp-debuginfod-cache.
+ENV DEBUGINFOD_URLS="https://debuginfod.ubuntu.com https://debuginfod.debian.net https://debuginfod.elfutils.org"
+
 RUN uv sync
 
 # Install pwnocli and deps in the project environment used by `uv run`
