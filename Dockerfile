@@ -38,7 +38,9 @@ RUN mkdir -p /workspace
 
 RUN useradd -m -s /bin/bash pwno && \
     chown -R pwno:pwno /app && \
-    chown -R pwno:pwno /workspace
+    chown -R pwno:pwno /workspace && \
+    mkdir -p /home/pwno/.cache/debuginfod_client && \
+    chown -R pwno:pwno /home/pwno/.cache
 
 RUN wget https://github.com/io12/pwninit/releases/download/3.3.1/pwninit -O /usr/local/bin/pwninit && \
     chmod +x /usr/local/bin/pwninit
