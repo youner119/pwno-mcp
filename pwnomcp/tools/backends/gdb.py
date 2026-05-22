@@ -56,6 +56,12 @@ class GdbController:
 
         # Core GDB settings via MI (-gdb-set) for reliable, fast non-interactive behavior
         for setting in [
+            # debuginfod fetch on attach can wedge GDB MI for 60s+ when the upstream
+            # debuginfod servers are unreachable from the container network (TCP SYN
+            # times out). pwndbg defaults to enabled=on; disable here so attach is
+            # never gated on external HTTP. Manual `set debuginfod enabled on` still
+            # works per-session if symbols are needed.
+            "-gdb-set debuginfod enabled off",
             "-gdb-set mi-async on",
             "-gdb-set pagination off",
             "-gdb-set confirm off",
